@@ -13,6 +13,6 @@ with open(finput) as f:
     for x in lines:
         # use this variable to create the new file
         file_name = x.split("|")[1]
-        fil = open('fasta' + file_name + '.fasta', 'w+')
+        fil = open('fasta/' + file_name + '.fasta', 'w+')
         fil.write(x)
         fil.close()
