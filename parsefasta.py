@@ -1,3 +1,10 @@
+# /**
+#  * @author [Rosdyana Kusuma]
+#  * @email [rosdyana.kusuma@gmail.com]
+#  * @create date 2018-04-19 04:02:36
+#  * @modify date 2018-04-19 04:02:36
+#  * @desc [parse one big fasta to each protein files]
+# */
 import os
 import sys
 

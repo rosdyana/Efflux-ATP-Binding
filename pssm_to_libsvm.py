@@ -1,3 +1,10 @@
+# /**
+#  * @author [Rosdyana Kusuma]
+#  * @email [rosdyana.kusuma@gmail.com]
+#  * @create date 2018-04-19 04:03:20
+#  * @modify date 2018-04-19 04:03:20
+#  * @desc [convert pssm file to libsvm format]
+# */
 import json
 from pprint import pprint
 import os

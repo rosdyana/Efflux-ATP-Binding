@@ -1,3 +1,10 @@
+# /**
+#  * @author [Rosdyana Kusuma]
+#  * @email [rosdyana.kusuma@gmail.com]
+#  * @create date 2018-04-19 04:05:18
+#  * @modify date 2018-04-19 04:05:18
+#  * @desc [generate position of binding site in sequence]
+# */
 import json
 import pandas as pd
 
@@ -32,4 +39,4 @@ for i, v in enumerate(data['Nucleotide binding']):
 
 outfile = "poslist.json"
 with open(outfile, 'w') as fp:
-    json_data = json.dump(datadict, fp, indent=4, sort_keys=True)
+    json.dump(datadict, fp, indent=4, sort_keys=True)
