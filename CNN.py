@@ -160,7 +160,7 @@ def classificationPerformanceByThreshold(threshold, y_pred, y_true):
 
 
 # bo X_train, y_train vao day (tuong ung X_test, y_test)
-def train_get_result_with_threshold_for_all_fold(dataset, nb_epoch, batch_size, windowsize, finalResultFile):
+def train_get_result_with_threshold_for_all_fold(dataset_training, dataset_testing, dataset_validation, nb_epoch, batch_size, windowsize, finalResultFile):
 
     # XTrain, YTrain = dataPreprocessing(trainFile, windowsize)
     # YTrain = labelToOneHot(YTrain)
@@ -168,12 +168,15 @@ def train_get_result_with_threshold_for_all_fold(dataset, nb_epoch, batch_size, 
     # XTest, YTest = dataPreprocessing(testFile, windowsize)
     # YTest = labelToOneHot(YTest)
 
-    X, y = dataPreprocessing(dataset, windowsize)
+    XTrain, YTrain = dataPreprocessing(dataset_training, windowsize)
+    XTest, YTest = dataPreprocessing(dataset_testing, windowsize)
+    XVal, YVal = dataPreprocessing(dataset_validation, windowsize)
 
-    XTrain, XTest, YTrain, YTest = train_test_split(
-        X, y, test_size=0.2, random_state=42)
+    # XTrain, XTest, YTrain, YTest = train_test_split(
+    #     X, y, test_size=0.2, random_state=42)
     YTrain = labelToOneHot(YTrain)
     YTest = labelToOneHot(YTest)
+    YVal = labelToOneHot(YVal)
 
     # print("\nSau khi da dung labelToOneHot")
     # print("\nXTrain shape ", XTrain.shape)
@@ -183,11 +186,11 @@ def train_get_result_with_threshold_for_all_fold(dataset, nb_epoch, batch_size, 
     # fit the model
     # version 1.2.2: dung nb_epoch thay cho epochs
     classifier.fit(XTrain, YTrain, batch_size=batch_size,
-                   nb_epoch=nb_epoch, verbose=2)
+                   nb_epoch=nb_epoch, verbose=2, validation_data=(XVal, YVal))
 
     # save model
-    classifier.save('20171110.cnn47.Train_Transport_Without_Electron_10_Fold' +
-                    str(windowsize) + '.h5')  # creates a HDF5 file 'my_model.h5'
+    # creates a HDF5 file 'my_model.h5'
+    classifier.save('CNN' + str(windowsize) + '.h5')
 
     # lay ket qua predict
     y_pred = classifier.predict(XTest)
@@ -214,9 +217,11 @@ finalResultFile = "finalresult.csv"
 windowsize = 17
 nb_epoch = int(sys.argv[1])
 batch_size = int(sys.argv[2])
-dataset = "dataset.csv"
+dataset_training = sys.argv[3]
+dataset_testing = sys.argv[4]
+dataset_validation = sys.argv[5]
 train_get_result_with_threshold_for_all_fold(
-    dataset, nb_epoch, batch_size, windowsize, finalResultFile)
+    dataset_training, dataset_testing, dataset_validation, nb_epoch, batch_size, windowsize, finalResultFile)
 # for split in range(1,11):
 #     trainFile="data/Transport/sorted-normalized-dataset-csv-single based-without electron/balancedDataset19_"+str(split)+".csv"
 #     train_get_result_with_threshold_for_all_fold(split,trainFile,testFile,nb_epoch,windowsize,finalResultFile)
