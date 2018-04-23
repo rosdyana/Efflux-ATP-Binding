@@ -12,6 +12,11 @@
 python pssmbyblast.py <fastadir>
 ```
 
+### Generate position list of binding site
+```
+python generateposlist.py
+```
+
 ### Filter pssm based on the similarity result
 1. Make sure you've already run blastclust tool to generate similarity result
 2. run this script to filter the pssm files
