@@ -217,9 +217,10 @@ finalResultFile = "finalresult.csv"
 windowsize = 17
 nb_epoch = int(sys.argv[1])
 batch_size = int(sys.argv[2])
-dataset_training = sys.argv[3]
-dataset_testing = sys.argv[4]
-dataset_validation = sys.argv[5]
+dataset_prefix = sys.argv[3]
+dataset_training = "similar{}training.csv".format(dataset_prefix)
+dataset_testing = "similar{}testing.csv".format(dataset_prefix)
+dataset_validation = "similar{}validation.csv".format(dataset_prefix)
 train_get_result_with_threshold_for_all_fold(
     dataset_training, dataset_testing, dataset_validation, nb_epoch, batch_size, windowsize, finalResultFile)
 # for split in range(1,11):
