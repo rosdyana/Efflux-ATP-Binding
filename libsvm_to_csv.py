@@ -1,4 +1,12 @@
+# /**
+#  * @author [Rosdyana Kusuma]
+#  * @email [rosdyana.kusuma@gmail.com]
+#  * @create date 2018-04-23 03:23:17
+#  * @modify date 2018-04-23 03:23:17
+#  * @desc [Convert LIBSVM to CSV]
+# */
 import os
+import sys
 
 
 def libsvmToCsv(filename, OutputFile):
@@ -25,8 +33,12 @@ def libsvmToCsv(filename, OutputFile):
     f2.close()
 
 
-dinput = "similar30libsvm"
-douput = "similar30csv"
+dinput = sys.argv[1]
+douput = "similar{}csv".format(dinput[7:-6])
+
+if not os.path.exists(douput):
+    os.makedirs(douput)
+
 for fileLibsvm in os.listdir(dinput):
     onlyName = fileLibsvm.split(".")[0]
     inputFile = "{}/{}".format(dinput, fileLibsvm)

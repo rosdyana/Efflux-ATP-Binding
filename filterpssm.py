@@ -2,7 +2,7 @@
 #  * @author [Rosdyana Kusuma]
 #  * @email [rosdyana.kusuma@gmail.com]
 #  * @create date 2018-04-19 03:09:15
-#  * @modify date 2018-04-19 03:09:26
+#  * @modify date 2018-04-23 03:19:41
 #  * @desc [Tool to filter pssm from similarity list]
 # */
 

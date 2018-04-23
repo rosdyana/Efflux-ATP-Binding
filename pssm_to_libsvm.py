@@ -2,12 +2,13 @@
 #  * @author [Rosdyana Kusuma]
 #  * @email [rosdyana.kusuma@gmail.com]
 #  * @create date 2018-04-19 04:03:20
-#  * @modify date 2018-04-19 04:03:20
+#  * @modify date 2018-04-23 03:19:21
 #  * @desc [convert pssm file to libsvm format]
 # */
 import json
 from pprint import pprint
 import os
+import sys
 
 AMINO = ["A", "R", "N", "D", "C", "Q", "E", "G", "H",
          "I", "L", "K", "M", "F", "P", "S", "T", "W", "Y", "V"]
@@ -16,8 +17,6 @@ zero_padding = ['0', '0', '0', '0', '0', '0', '0', '0', '0',
                 '0', '0', '0', '0', '0', '0', '0', '0', '0', '0', '0']
 
 datajson = json.load(open('poslist.json'))
-# for i, v in enumerate(datajson['Q9UNQ0']):
-#     print(v)
 
 
 def readPSSM(filename):
@@ -53,33 +52,19 @@ def generateDatasetWithWindowSize(pssmFile, windowSize, resultFile):
     f_result = open(resultFile, "a")
     proteinName = pssmFile.split("/")[1].split(".")[0]
     posData = datajson[proteinName]
-    # --> ['155', '157', '184', '184', '188', '189', '193', '193', '217', '218']
-    # posSeg = posData[:-1].split()
-    # posList = []
-    # i = 0
-    # print("length of posSeg ", len(posSeg))
-    # while i < len(posSeg):
-    #     start = int(posSeg[i])
-    #     end = int(posSeg[i + 1])
-    #     for j in range(start, end + 1):
-    #         posList.append(j)
-    #     i = i + 2
-    # print(posList) # --> [155, 156, 157, 184, 188, 189, 193, 217, 218]
 
-    # generate dataset according to window size
-    # chu y padding roi thi index thay doi
     length = len(listOfListWithZeroPadding)
     start = 0
     end = start + windowSize - 1
     i = 0
     print("length of pssm list ", length)
     cont = True
-    while i < length and cont:  # duyet theo list cac dong pssm
+    while i < length and cont:
         listToWrite = []
         #print("start ",start, " end ",end)
         classType = ""
         for j in range(start, end + 1):
-            if j == (end - numOfPadding):  # xet dong chinh giữa
+            if j == (end - numOfPadding):
                 if (j - numOfPadding + 1) in posData:
                     classType = "1"
                 else:
@@ -88,7 +73,6 @@ def generateDatasetWithWindowSize(pssmFile, windowSize, resultFile):
                 listToWrite.append(k)
 
         featureNum = 1
-        # ghi du lieu ra file ket qua
         f_result.write(classType + " ")
         for m in listToWrite:
             f_result.write(str(featureNum) + ":" + str(m) + " ")
@@ -100,13 +84,16 @@ def generateDatasetWithWindowSize(pssmFile, windowSize, resultFile):
         end = start + windowSize - 1
         if start >= length or end >= length:
             cont = False
-    # Ket thuc vong lap while
     f_result.close()
 
 
-dinput = "similar30pssm"
-windowSize = 17
-doutput = "similar30libsvm"
+dinput = sys.argv[1]
+windowSize = int(sys.argv[2])
+doutput = "similar{}libsvm".format(dinput[7:-4])
+
+if not os.path.exists(doutput):
+    os.makedirs(doutput)
+
 for pssmfile in os.listdir(dinput):
     inputFile = "{}/{}".format(dinput, pssmfile)
     resultFile = "{}/{}.libsvm".format(doutput, pssmfile.split(".")[0])
