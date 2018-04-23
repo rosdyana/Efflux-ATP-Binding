@@ -160,10 +160,14 @@ def build_model(SHAPE, nb_classes, bn_axis, seed=None):
     x = conv_block(x, 3, [128, 128, 512], stage=3, block='a')
     x = identity_block(x, 3, [128, 128, 512], stage=3, block='b')
     x = identity_block(x, 3, [128, 128, 512], stage=3, block='c')
+    x = identity_block(x, 3, [128, 128, 512], stage=3, block='d')
 
     x = conv_block(x, 3, [256, 256, 1024], stage=4, block='a')
     x = identity_block(x, 3, [256, 256, 1024], stage=4, block='b')
     x = identity_block(x, 3, [256, 256, 1024], stage=4, block='c')
+    x = identity_block(x, 3, [256, 256, 1024], stage=4, block='d')
+    x = identity_block(x, 3, [256, 256, 1024], stage=4, block='e')
+    x = identity_block(x, 3, [256, 256, 1024], stage=4, block='f')
 
     x = conv_block(x, 3, [512, 512, 2048], stage=5, block='a')
     x = identity_block(x, 3, [512, 512, 2048], stage=5, block='b')
@@ -194,7 +198,7 @@ def main():
     parser.add_argument('-p', '--dataset_prefix',
                         help='Dataset prefix', default="20")
     parser.add_argument('-o', '--output',
-                        help='a result file', type=str, default="hasilnya18.txt")
+                        help='a result file', type=str, default="hasilnya50.txt")
     args = parser.parse_args()
     # dimensions of our images.
     img_width, img_height = args.dimension, args.dimension
@@ -229,7 +233,7 @@ def main():
               epochs=epochs, validation_data=(X_val, Y_val))
 
     # Save Model or creates a HDF5 file
-    model.save('{}resnet18_model.h5'.format(time.monotonic()), overwrite=True)
+    model.save('{}resnet50_model.h5'.format(time.monotonic()), overwrite=True)
     # del model  # deletes the existing model
     predicted = model.predict(X_test)
     y_pred = np.argmax(predicted, axis=1)
