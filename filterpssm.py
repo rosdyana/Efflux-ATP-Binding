@@ -12,14 +12,21 @@ import pandas as pd
 from shutil import copyfile
 
 finput = sys.argv[1]
-outdir = sys.argv[2]
+outdir = "similar{}pssm".format(finput[-2:])
+
+if not os.path.exists(outdir):
+    os.makedirs(outdir)
 
 dinput = pd.read_csv(finput, header=None)
-for i in dinput[0]:
-    print("copying {}".format(i))
-    origin = "{}/pssm/{}.pssm".format(os.getcwd(),i)
-    destination = "{}/{}/{}.pssm".format(os.getcwd(),outdir,i)
+for i, v in enumerate(dinput[0]):
+    print("copying {}".format(v))
+    origin = "{}/pssm/{}.pssm".format(os.getcwd(), v)
+    destination = "{}/{}/{}.pssm".format(os.getcwd(), outdir, v)
     try:
-        copyfile(origin,destination)
+        copyfile(origin, destination)
     except Exception as e:
-        print(e)
+        print("{} not found, try the alternative".format(v))
+        print("copying alternate {}".format(dinput[1][i]))
+        origin = "{}/pssm/{}.pssm".format(os.getcwd(), dinput[1][i])
+        destination = "{}/{}/{}.pssm".format(os.getcwd(), outdir, dinput[1][i])
+        copyfile(origin, destination)
