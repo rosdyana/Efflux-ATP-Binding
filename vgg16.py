@@ -124,7 +124,7 @@ def main():
     parser.add_argument('-p', '--dataset_prefix',
                         help='Dataset prefix', default="20")
     parser.add_argument('-o', '--output',
-                        help='a result file', type=str, default="hasilnyavgg19.txt")
+                        help='a result file', type=str, default="hasilnyavgg16.txt")
     args = parser.parse_args()
     # dimensions of our images.
     img_width, img_height = args.dimension, args.dimension

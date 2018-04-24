@@ -192,7 +192,7 @@ def main():
     parser.add_argument('-p', '--dataset_prefix',
                         help='Dataset prefix', default="20")
     parser.add_argument('-o', '--output',
-                        help='a result file', type=str, default="hasilnyavgg19.txt")
+                        help='a result file', type=str, default="hasilnyadensenet.txt")
     parser.add_argument('-l', '--layernumber',
                         help='layernumber', type=str, default="121")
     args = parser.parse_args()
@@ -234,7 +234,8 @@ def main():
               epochs=epochs, validation_data=(X_val, Y_val))
 
     # Save Model or creates a HDF5 file
-    model.save('{}vgg16_model.h5'.format(time.monotonic()), overwrite=True)
+    model.save('{}_{}_model.h5'.format(
+        time.monotonic(), args.layernumber), overwrite=True)
     # del model  # deletes the existing model
     predicted = model.predict(X_ind)
     y_pred = np.argmax(predicted, axis=1)
