@@ -25,13 +25,11 @@ from keras.utils import np_utils
 from keras.optimizers import *
 import numpy as np
 import pandas as pd
-from sklearn.metrics import confusion_matrix
-from sklearn.metrics import classification_report
-from sklearn.model_selection import train_test_split
+from sklearn.metrics import confusion_matrix, classification_report, auc
 import argparse
 
 import time
-from datetime import timedelta
+from datetime import timedelta, datetime
 
 
 def changeLabel(label):
@@ -211,16 +209,16 @@ def main():
     print("loading dataset")
     dataset_prefix = args.dataset_prefix
     dataset_training = "similar{}training.csv".format(dataset_prefix)
-    dataset_testing = "similar{}testing.csv".format(dataset_prefix)
     dataset_validation = "similar{}validation.csv".format(dataset_prefix)
+    dataset_independent = "similar{}independent.csv".format(dataset_prefix)
     windowsize = 17
     X_train, Y_train = dataPreprocessing(dataset_training, windowsize)
-    X_test, Y_test = dataPreprocessing(dataset_testing, windowsize)
     X_val, Y_val = dataPreprocessing(dataset_validation, windowsize)
+    X_ind, Y_ind = dataPreprocessing(dataset_independent, windowsize)
 
     Y_train = labelToOneHot(Y_train)
-    Y_test = labelToOneHot(Y_test)
     Y_val = labelToOneHot(Y_val)
+    Y_ind = labelToOneHot(Y_ind)
     nb_classes = 2
 
     model = build_model(SHAPE, nb_classes, bn_axis)
@@ -235,11 +233,11 @@ def main():
     # Save Model or creates a HDF5 file
     model.save('{}resnet50_model.h5'.format(time.monotonic()), overwrite=True)
     # del model  # deletes the existing model
-    predicted = model.predict(X_test)
+    predicted = model.predict(X_ind)
     y_pred = np.argmax(predicted, axis=1)
-    Y_test = np.argmax(Y_test, axis=1)
-    cm = confusion_matrix(Y_test, y_pred)
-    report = classification_report(Y_test, y_pred)
+    Y_ind = np.argmax(Y_ind, axis=1)
+    cm = confusion_matrix(Y_ind, y_pred)
+    report = classification_report(Y_ind, y_pred)
     tn = cm[0][0]
     fn = cm[1][0]
     tp = cm[1][1]
@@ -252,8 +250,8 @@ def main():
         fp = 1
     if fn == 0:
         fn = 1
-    TPR = float(tp) / (float(tp) + float(fn))
-    FPR = float(fp) / (float(fp) + float(tn))
+    _fpr, _tpr, _threshold = roc_curve(Y_test, y_pred)
+    AUC = auc(_fpr, _tpr)
     accuracy = round((float(tp) + float(tn)) / (float(tp) +
                                                 float(fp) + float(fn) + float(tn)), 3)
     specitivity = round(float(tn) / (float(tn) + float(fp)), 3)
@@ -267,12 +265,14 @@ def main():
 
     f_output = open(args.output, 'a')
     f_output.write('=======\n')
+    f_output.write("{}\n".format(datetime.now))
     f_output.write('TN: {}\n'.format(tn))
     f_output.write('FN: {}\n'.format(fn))
     f_output.write('TP: {}\n'.format(tp))
     f_output.write('FP: {}\n'.format(fp))
-    f_output.write('TPR: {}\n'.format(TPR))
-    f_output.write('FPR: {}\n'.format(FPR))
+    f_output.write('TPR: {}\n'.format(_fpr))
+    f_output.write('FPR: {}\n'.format(_tpr))
+    f_output.write('AUC: {}\n'.format(AUC))
     f_output.write('accuracy: {}\n'.format(accuracy))
     f_output.write('specitivity: {}\n'.format(specitivity))
     f_output.write("sensitivity : {}\n".format(sensitivity))

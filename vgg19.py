@@ -25,13 +25,11 @@ from keras.utils import np_utils
 from keras.optimizers import *
 import numpy as np
 import pandas as pd
-from sklearn.metrics import confusion_matrix
-from sklearn.metrics import classification_report
-from sklearn.model_selection import train_test_split
+from sklearn.metrics import confusion_matrix, classification_report, auc, roc_curve
 import argparse
 
 import time
-from datetime import timedelta
+from datetime import timedelta, datetime
 
 
 def changeLabel(label):
@@ -127,10 +125,10 @@ def main():
                         help='num of epochs', type=int, default=100)
     parser.add_argument('-b', '--batch_size',
                         help='num of batch_size', type=int, default=64)
-    # parser.add_argument('-o', '--optimizer',
-    #                     help='choose the optimizer (rmsprop, adagrad, adadelta, adam, adamax, nadam)', default="adam")
+    parser.add_argument('-p', '--dataset_prefix',
+                        help='Dataset prefix', default="20")
     parser.add_argument('-o', '--output',
-                        help='a result file', type=str, default="hasilnya.txt")
+                        help='a result file', type=str, default="hasilnyavgg19.txt")
     args = parser.parse_args()
     # dimensions of our images.
     img_width, img_height = args.dimension, args.dimension
@@ -141,14 +139,18 @@ def main():
     # bn_axis = 3 if K.image_dim_ordering() == 'tf' else 1
 
     print("loading dataset")
-    dataset = 'dataset.csv'
+    dataset_prefix = args.dataset_prefix
+    dataset_training = "similar{}training.csv".format(dataset_prefix)
+    dataset_validation = "similar{}validation.csv".format(dataset_prefix)
+    dataset_independent = "similar{}independent.csv".format(dataset_prefix)
     windowsize = 17
-    X, y = dataPreprocessing(dataset, windowsize)
+    X_train, Y_train = dataPreprocessing(dataset_training, windowsize)
+    X_val, Y_val = dataPreprocessing(dataset_validation, windowsize)
+    X_ind, Y_ind = dataPreprocessing(dataset_independent, windowsize)
 
-    X_train, X_test, Y_train, Y_test = train_test_split(
-        X, y, test_size=0.2, random_state=42)
     Y_train = labelToOneHot(Y_train)
-    Y_test = labelToOneHot(Y_test)
+    Y_val = labelToOneHot(Y_val)
+    Y_ind = labelToOneHot(Y_ind)
     nb_classes = 2
 
     model = build_model(SHAPE, nb_classes)
@@ -157,16 +159,17 @@ def main():
                   loss='categorical_crossentropy', metrics=['accuracy'])
 
     # Fit the model
-    model.fit(X_train, Y_train, batch_size=batch_size, epochs=epochs)
+    model.fit(X_train, Y_train, batch_size=batch_size,
+              epochs=epochs, validation_data=(X_val, Y_val))
 
     # Save Model or creates a HDF5 file
-    model.save('vgg19_model.h5', overwrite=True)
+    model.save('{}vgg19_model.h5'.format(time.monotonic()), overwrite=True)
     # del model  # deletes the existing model
-    predicted = model.predict(X_test)
+    predicted = model.predict(X_ind)
     y_pred = np.argmax(predicted, axis=1)
-    Y_test = np.argmax(Y_test, axis=1)
-    cm = confusion_matrix(Y_test, y_pred)
-    report = classification_report(Y_test, y_pred)
+    Y_ind = np.argmax(Y_ind, axis=1)
+    cm = confusion_matrix(Y_ind, y_pred)
+    report = classification_report(Y_ind, y_pred)
     tn = cm[0][0]
     fn = cm[1][0]
     tp = cm[1][1]
@@ -179,8 +182,8 @@ def main():
         fp = 1
     if fn == 0:
         fn = 1
-    TPR = float(tp) / (float(tp) + float(fn))
-    FPR = float(fp) / (float(fp) + float(tn))
+    _fpr, _tpr, _threshold = roc_curve(Y_test, y_pred)
+    AUC = auc(_fpr, _tpr)
     accuracy = round((float(tp) + float(tn)) / (float(tp) +
                                                 float(fp) + float(fn) + float(tn)), 3)
     specitivity = round(float(tn) / (float(tn) + float(fp)), 3)
@@ -192,14 +195,16 @@ def main():
         * (float(tn) + float(fn))
     ), 3)
 
-    f_output = open('resultvgg19.txt', 'a')
+    f_output = open(args.output, 'a')
     f_output.write('=======\n')
+    f_output.write("{}\n".format(datetime.now))
     f_output.write('TN: {}\n'.format(tn))
     f_output.write('FN: {}\n'.format(fn))
     f_output.write('TP: {}\n'.format(tp))
     f_output.write('FP: {}\n'.format(fp))
-    f_output.write('TPR: {}\n'.format(TPR))
-    f_output.write('FPR: {}\n'.format(FPR))
+    f_output.write('TPR: {}\n'.format(_fpr))
+    f_output.write('FPR: {}\n'.format(_tpr))
+    f_output.write('AUC: {}\n'.format(AUC))
     f_output.write('accuracy: {}\n'.format(accuracy))
     f_output.write('specitivity: {}\n'.format(specitivity))
     f_output.write("sensitivity : {}\n".format(sensitivity))

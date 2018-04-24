@@ -36,29 +36,29 @@ def merge_files(outputfile, listfiles):
 files = [os.path.join(dinput, f) for f in src_files if valid_path(dinput, f)]
 
 training_list = []
-testing_list = []
 validation_list = []
+independent_list = []
 
 path, dirs, files = os.walk(dinput).__next__()
 file_count = len(files)
 training_num = math.ceil(file_count * percentage)
-validation_num = (file_count - training_num) // 3
-testing_num = file_count - training_num - validation_num
+independent_num = (file_count - training_num) // 3
+validation_num = file_count - training_num - independent_num
 print("{} = {} - {} - {}".format(file_count,
-                                 training_num, testing_num, validation_num))
+                                 training_num, validation_num, independent_num))
 
 for i, v in enumerate(files):
-    if i < validation_num:
+    if i < independent_num:
+        independent_list.append(v)
+    elif i > independent_num and i <= validation_num + independent_num:
         validation_list.append(v)
-    elif i > validation_num and i <= testing_num + validation_num:
-        testing_list.append(v)
     else:
         training_list.append(v)
 
 trainingoutput = "{}training.csv".format(dinput[:9])
-testingoutput = "{}testing.csv".format(dinput[:9])
 validationoutput = "{}validation.csv".format(dinput[:9])
+independentoutput = "{}independent.csv".format(dinput[:9])
 
 merge_files(trainingoutput, training_list)
-merge_files(testingoutput, testing_list)
 merge_files(validationoutput, validation_list)
+merge_files(independentoutput, independent_list)
