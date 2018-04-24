@@ -25,7 +25,7 @@ from keras.utils import np_utils
 from keras.optimizers import *
 import numpy as np
 import pandas as pd
-from sklearn.metrics import confusion_matrix, classification_report, auc
+from sklearn.metrics import confusion_matrix, classification_report, auc, roc_curve
 from keras.models import load_model
 import argparse
 
@@ -86,7 +86,8 @@ if fn == 0:
     fn = 1
 TPR = float(tp) / (float(tp) + float(fn))
 FPR = float(fp) / (float(fp) + float(tn))
-AUC = auc(FPR, TPR)
+_fpr, _tpr, _threshold = roc_curve(Y_test, y_pred, pos_label=2)
+AUC = auc(_fpr, _tpr)
 accuracy = round((float(tp) + float(tn)) / (float(tp) +
                                             float(fp) + float(fn) + float(tn)), 3)
 specitivity = round(float(tn) / (float(tn) + float(fp)), 3)
