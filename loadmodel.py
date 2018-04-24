@@ -25,9 +25,7 @@ from keras.utils import np_utils
 from keras.optimizers import *
 import numpy as np
 import pandas as pd
-from sklearn.metrics import confusion_matrix
-from sklearn.metrics import classification_report
-from sklearn.model_selection import train_test_split
+from sklearn.metrics import confusion_matrix, classification_report, auc
 from keras.models import load_model
 import argparse
 
@@ -88,6 +86,7 @@ if fn == 0:
     fn = 1
 TPR = float(tp) / (float(tp) + float(fn))
 FPR = float(fp) / (float(fp) + float(tn))
+AUC = auc(FPR, TPR)
 accuracy = round((float(tp) + float(tn)) / (float(tp) +
                                             float(fp) + float(fn) + float(tn)), 3)
 specitivity = round(float(tn) / (float(tn) + float(fp)), 3)
@@ -107,6 +106,7 @@ f_output.write('TP: {}\n'.format(tp))
 f_output.write('FP: {}\n'.format(fp))
 f_output.write('TPR: {}\n'.format(TPR))
 f_output.write('FPR: {}\n'.format(FPR))
+f_output.write('AUC: {}\n'.format(AUC))
 f_output.write('accuracy: {}\n'.format(accuracy))
 f_output.write('specitivity: {}\n'.format(specitivity))
 f_output.write("sensitivity : {}\n".format(sensitivity))
