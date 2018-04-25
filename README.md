@@ -36,3 +36,22 @@ python pssm_to_libsvm.py <folderofpssm> <windowssize>
 python libsvm_to_csv.py <folderoflibsvm>
 ```
 
+### Generate Dataset
+1. run this script to generate dataset as training, validation and independent with customize ratio
+```
+python generatedataset.py <folderofcsv> <ratio>
+```
+
+### Run some algorithm
+We provide some algorithm to try such as CNN, ResNet, VGG and DenseNet.
+
+See this current result.
+
+|Algo  |ACC  |TN  |FN  |TP  |FP  |Specitivity  |Sensitivity  |MCC  |AUC  |
+|:-|:-:|:-:|:-:|:-:|:-:|:-:|:-:|:-:|:-:|
+|CNN  |100 %  |4177  |1  |48  |1  |100 %  |98 %  |0.979  |  |
+|ResNet 18  |99 %  |4176  |1  |48  |2  |100 %  |98 %  |0.969  |  |
+|ResNet 50  |99 %  |4176  |1  |48  |2 |100 %  |98 %  |0.969 |  |
+|VGG 16  |  |  |  |  |  |  |  |  |  |
+|VGG 19  |  |  |  |  |  |  |  |  |  |
+|DenseNet  |  |  |  |  |  |  |  |  |  |
