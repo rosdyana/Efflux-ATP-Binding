@@ -178,6 +178,8 @@ def main():
         fp = 1
     if fn == 0:
         fn = 1
+    TPR = float(tp) / (float(tp) + float(fn))
+    FPR = float(fp) / (float(fp) + float(tn))
     _fpr, _tpr, _threshold = roc_curve(Y_test, y_pred)
     AUC = auc(_fpr, _tpr)
     accuracy = round((float(tp) + float(tn)) / (float(tp) +
@@ -198,8 +200,8 @@ def main():
     f_output.write('FN: {}\n'.format(fn))
     f_output.write('TP: {}\n'.format(tp))
     f_output.write('FP: {}\n'.format(fp))
-    f_output.write('TPR: {}\n'.format(_fpr))
-    f_output.write('FPR: {}\n'.format(_tpr))
+    f_output.write('TPR: {}\n'.format(TPR))
+    f_output.write('FPR: {}\n'.format(FPR))
     f_output.write('AUC: {}\n'.format(AUC))
     f_output.write('accuracy: {}\n'.format(accuracy))
     f_output.write('specitivity: {}\n'.format(specitivity))
