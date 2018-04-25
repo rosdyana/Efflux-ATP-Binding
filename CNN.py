@@ -14,15 +14,14 @@ from keras.layers import Dense
 from keras.layers import Convolution2D
 from sklearn.model_selection import StratifiedKFold
 import math
-# confusion matrix
-from sklearn.metrics import confusion_matrix
 from sklearn.utils import class_weight
 from keras import backend as K
 import timeit
+from datetime import timedelta, datetime
 from keras.models import model_from_json
 from keras.utils import np_utils
 from keras.models import load_model
-from sklearn.model_selection import train_test_split
+from sklearn.metrics import confusion_matrix, classification_report, auc, roc_curve
 import sys
 # fix random seed for reproducibility
 seed = 7
@@ -53,33 +52,32 @@ def dataPreprocessing(dataFile, windowsize):
     return X, y
 
 
-# xem ra cau hinh cu the cho model, CV va IND deu phai dung cung 1 model
 def build_and_compile_the_model_for_training(windowsize):
     # Initialising the CNN
     classifier = Sequential()
 
     # Step 1
     classifier.add(Convolution2D(32, 3, 3, init='glorot_uniform', border_mode='same', input_shape=(
-        windowsize, 20, 1), activation='relu'))  # version 1.2.2: dung 3,3 thay cho (3,3)
+        windowsize, 20, 1), activation='relu'))
     # Step 2 - Pooling
     classifier.add(MaxPooling2D(pool_size=(2, 2)))
 
     # Step 1
     classifier.add(Convolution2D(48, 3, 3, init='glorot_uniform', border_mode='same',
-                                 activation='relu'))  # version 1.2.2: dung 3,3 thay cho (3,3)
+                                 activation='relu'))
     # Step 2 - Pooling
     classifier.add(MaxPooling2D(pool_size=(2, 2)))
     classifier.add(Dropout(0.25))
 
     # Step 1
     classifier.add(Convolution2D(64, 3, 3, init='glorot_uniform', border_mode='same',
-                                 activation='relu'))  # version 1.2.2: dung 3,3 thay cho (3,3)
+                                 activation='relu'))
     # Step 2 - Pooling
     classifier.add(MaxPooling2D(pool_size=(2, 2)))
 
     # Step 1
     classifier.add(Convolution2D(96, 3, 3, init='glorot_uniform', border_mode='same',
-                                 activation='relu'))  # version 1.2.2: dung 3,3 thay cho (3,3)
+                                 activation='relu'))
     # Step 2 - Pooling
     classifier.add(MaxPooling2D(pool_size=(2, 2)))
     classifier.add(Dropout(0.25))
@@ -88,16 +86,13 @@ def build_and_compile_the_model_for_training(windowsize):
     classifier.add(Flatten())
 
     # Step 4 - Full connection
-    # version 1.2.2: dung output_dim thay do units
+
     classifier.add(Dense(output_dim=256, activation='relu'))
     # Dropout
     classifier.add(Dropout(0.5))
 
     classifier.add(Dense(output_dim=2, activation='softmax'))
 
-    # Compiling the CNN
-    # Metric values are recorded at the end of each epoch on the training dataset.
-    # If a validation dataset is also provided, then the metric recorded is also calculated for the validation dataset.
     classifier.compile(
         optimizer='adam', loss='categorical_crossentropy', metrics=["accuracy"])
 
@@ -110,17 +105,12 @@ def convert2OneHot(label):
 
 
 def classificationPerformanceByThreshold(threshold, y_pred, y_true):
-    # Y_pred trả về từ function model.predict, dù hàm activation là softmax hay sigmoid thì cũng sẽ có dạng
-    # 1 list các probability
-    # dùng threshold để quy kết quả về class tương ứng, sau đó đem so với Y_true (là các onehot vector)
-
-    # chú ý cái xử lý, phải copy thằng y_pred ra chứ
     Y_pred = np.empty_like(y_pred)
     for i in range(len(y_pred)):
         if y_pred[i][0] >= threshold:
-            Y_pred[i] = np.array([1, 0])  # gán bằng class pos
+            Y_pred[i] = np.array([1, 0])
         else:
-            Y_pred[i] = np.array([0, 1])  # gán bằng class neg
+            Y_pred[i] = np.array([0, 1])
 
     Y_pred = np.argmax(Y_pred, axis=1)
     y_true = np.argmax(y_true, axis=1)
@@ -139,11 +129,10 @@ def classificationPerformanceByThreshold(threshold, y_pred, y_true):
         fp = 1
     if fn == 0:
         fn = 1
-    # print("tp ", float(tp))
-    # print("fn ", float(fn))
-    # print("tn ", float(tn))
-    # print("fp ", float(fp))
-
+    TPR = float(tp) / (float(tp) + float(fn))
+    FPR = float(fp) / (float(fp) + float(tn))
+    _fpr, _tpr, _threshold = roc_curve(y_true, Y_pred)
+    AUC = auc(_fpr, _tpr)
     accuracy = round((float(tp) + float(tn)) / (float(tp) +
                                                 float(fp) + float(fn) + float(tn)), 3)
     specitivity = round(float(tn) / (float(tn) + float(fp)), 3)
@@ -154,78 +143,68 @@ def classificationPerformanceByThreshold(threshold, y_pred, y_true):
         * (float(tn) + float(fp))
         * (float(tn) + float(fn))
     ), 3)
-    # note: best performance so far by others:  86.13    88.37    87.25    0.75
 
-    return accuracy, specitivity, sensitivity, mcc
+    return accuracy, specitivity, sensitivity, mcc, AUC, TPR, FPR, tp, tn, fp, fn
 
 
-# bo X_train, y_train vao day (tuong ung X_test, y_test)
-def train_get_result_with_threshold_for_all_fold(dataset_training, dataset_testing, dataset_validation, nb_epoch, batch_size, windowsize, finalResultFile):
-
-    # XTrain, YTrain = dataPreprocessing(trainFile, windowsize)
-    # YTrain = labelToOneHot(YTrain)
-
-    # XTest, YTest = dataPreprocessing(testFile, windowsize)
-    # YTest = labelToOneHot(YTest)
+def train_get_result_with_threshold_for_all_fold(dataset_training, dataset_independent, dataset_validation, nb_epoch, batch_size, windowsize, finalResultFile):
 
     XTrain, YTrain = dataPreprocessing(dataset_training, windowsize)
-    XTest, YTest = dataPreprocessing(dataset_testing, windowsize)
+    XInd YInd = dataPreprocessing(dataset_independent, windowsize)
     XVal, YVal = dataPreprocessing(dataset_validation, windowsize)
 
-    # XTrain, XTest, YTrain, YTest = train_test_split(
-    #     X, y, test_size=0.2, random_state=42)
     YTrain = labelToOneHot(YTrain)
-    YTest = labelToOneHot(YTest)
+    YInd = labelToOneHot(YInd)
     YVal = labelToOneHot(YVal)
 
-    # print("\nSau khi da dung labelToOneHot")
-    # print("\nXTrain shape ", XTrain.shape)
-    # print("\nYTrain shape ", YTrain.shape)
-
     classifier = build_and_compile_the_model_for_training(windowsize)
-    # fit the model
-    # version 1.2.2: dung nb_epoch thay cho epochs
+
     classifier.fit(XTrain, YTrain, batch_size=batch_size,
                    nb_epoch=nb_epoch, verbose=2, validation_data=(XVal, YVal))
 
-    # save model
-    # creates a HDF5 file 'my_model.h5'
     classifier.save('CNN' + str(windowsize) + '.h5')
 
-    # lay ket qua predict
-    y_pred = classifier.predict(XTest)
+    y_pred = classifier.predict(XInd)
 
-    del classifier  # deletes the existing model after it is used to predict
+    del classifier
 
-    f2 = open(finalResultFile, "a")
+    f_output = open(finalResultFile, "a")
     threshold = [0.149, 0.5]
     # while threshold < 1:
     for i in threshold:
-        accuracy, specitivity, sensitivity, mcc = classificationPerformanceByThreshold(
-            i, y_pred, YTest)
-        f2.write(str(i) + ", " + str(accuracy) + ", " +
-                 str(specitivity) + ", " + str(sensitivity) + ", " + str(mcc) + "\n")
-    f2.close()
+        accuracy, specitivity, sensitivity, mcc, AUC, TPR, FPR, tp, tn, fp, fn = classificationPerformanceByThreshold(
+            i, y_pred, YInd)
+            f_output.write('=======\n')
+            f_output.write('threshold: {}\n'.format(i))
+            f_output.write("{}\n".format(datetime.now))
+            f_output.write('TN: {}\n'.format(tn))
+            f_output.write('FN: {}\n'.format(fn))
+            f_output.write('TP: {}\n'.format(tp))
+            f_output.write('FP: {}\n'.format(fp))
+            f_output.write('TPR: {}\n'.format(TPR))
+            f_output.write('FPR: {}\n'.format(FPR))
+            f_output.write('AUC: {}\n'.format(AUC))
+            f_output.write('accuracy: {}\n'.format(accuracy))
+            f_output.write('specitivity: {}\n'.format(specitivity))
+            f_output.write("sensitivity : {}\n".format(sensitivity))
+            f_output.write("mcc : {}\n".format(mcc))
+            f_output.write('=======\n')
+    f_output.close()
 
 
 start = timeit.default_timer()
 print("Start at " + str(start))
 
-# chay tren transport data, lay tat ca du lieu va chia 10 fold tinh lan luot
-# windowsize da duoc tinh lai theo dung chuan
-finalResultFile = "finalresult.csv"
+finalResultFile = "CNNresult.csv"
 windowsize = 17
-nb_epoch = int(sys.argv[1])
-batch_size = int(sys.argv[2])
+nb_epoch = 100
+batch_size = 64
 dataset_prefix = sys.argv[3]
 dataset_training = "similar{}training.csv".format(dataset_prefix)
-dataset_testing = "similar{}testing.csv".format(dataset_prefix)
+dataset_independent = "similar{}independent.csv".format(dataset_prefix)
 dataset_validation = "similar{}validation.csv".format(dataset_prefix)
 train_get_result_with_threshold_for_all_fold(
-    dataset_training, dataset_testing, dataset_validation, nb_epoch, batch_size, windowsize, finalResultFile)
-# for split in range(1,11):
-#     trainFile="data/Transport/sorted-normalized-dataset-csv-single based-without electron/balancedDataset19_"+str(split)+".csv"
-#     train_get_result_with_threshold_for_all_fold(split,trainFile,testFile,nb_epoch,windowsize,finalResultFile)
+    dataset_training, dataset_independent, dataset_validation, nb_epoch, batch_size, windowsize, finalResultFile)
 
 stop = timeit.default_timer()
 print("\nStop at " + str(stop))
