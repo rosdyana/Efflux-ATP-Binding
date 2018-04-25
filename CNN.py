@@ -150,7 +150,7 @@ def classificationPerformanceByThreshold(threshold, y_pred, y_true):
 def train_get_result_with_threshold_for_all_fold(dataset_training, dataset_independent, dataset_validation, nb_epoch, batch_size, windowsize, finalResultFile):
 
     XTrain, YTrain = dataPreprocessing(dataset_training, windowsize)
-    XInd YInd = dataPreprocessing(dataset_independent, windowsize)
+    XInd, YInd = dataPreprocessing(dataset_independent, windowsize)
     XVal, YVal = dataPreprocessing(dataset_validation, windowsize)
 
     YTrain = labelToOneHot(YTrain)
