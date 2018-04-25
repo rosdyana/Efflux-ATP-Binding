@@ -25,7 +25,7 @@ from keras.utils import np_utils
 from keras.optimizers import *
 import numpy as np
 import pandas as pd
-from sklearn.metrics import confusion_matrix, classification_report, auc
+from sklearn.metrics import confusion_matrix, classification_report, auc, roc_curve
 import argparse
 
 import time
