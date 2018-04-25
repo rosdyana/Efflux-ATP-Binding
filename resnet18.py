@@ -248,7 +248,7 @@ def main():
         fn = 1
     TPR = float(tp) / (float(tp) + float(fn))
     FPR = float(fp) / (float(fp) + float(tn))
-    _fpr, _tpr, _threshold = roc_curve(Y_test, y_pred)
+    _fpr, _tpr, _threshold = roc_curve(Y_ind, y_pred)
     AUC = auc(_fpr, _tpr)
     accuracy = round((float(tp) + float(tn)) / (float(tp) +
                                                 float(fp) + float(fn) + float(tn)), 3)
