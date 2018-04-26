@@ -3,9 +3,6 @@ import os
 os.environ["CUDA_DEVICE_ORDER"] = "PCI_BUS_ID"
 os.environ["CUDA_VISIBLE_DEVICES"] = "0"
 config = tf.ConfigProto()
-# maximun alloc gpu50% of MEM
-# config.gpu_options.per_process_gpu_memory_fraction = 0.5
-# allocate dynamically
 config.gpu_options.allow_growth = True
 sess = tf.Session(config=config)
 

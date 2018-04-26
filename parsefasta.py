@@ -10,10 +10,6 @@ import sys
 
 finput = sys.argv[1]
 with open(finput) as f:
-    # for line in f:
-    #     if ">" in line:
-    #         print(line.split("|")[1])
-    #     else:
     lines = f.read()
     lines = lines.split('>')
     lines = ['>' + x for x in lines[1:]]

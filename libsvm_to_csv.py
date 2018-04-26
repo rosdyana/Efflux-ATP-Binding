@@ -10,25 +10,22 @@ import sys
 
 
 def libsvmToCsv(filename, OutputFile):
-    #onlyfiles = [f for f in listdir(scrFolder) if isfile(join(scrFolder, f))]
-    # for filename in onlyfiles:
     print(filename + " is processing")
     f1 = open(filename, "r")
-    f2 = open(OutputFile, "a")  # thay đuôi libsvm thành csv
+    f2 = open(OutputFile, "a")
     lines = f1.readlines()
     for line in lines:
-        classtype = line[0]  # lấy giá trị class
-        line = line[1:-1]  # ko lấy class vì đã lưu ở trên rồi, ko lấy enter
+        classtype = line[0]
+        line = line[1:-1]
         values = line.split()
 
-        # ghi thông tin lên file đích
         for pair in values:
             colonPosition = pair.find(":")
             valueToWriteToFile = pair[colonPosition + 1:]
             f2.write(valueToWriteToFile + ", ")
-        # ghi giá trị class ở cuối dòng
+
         f2.write(classtype)
-        f2.write("\n")  # hết 1 dòng thì xuống hàng
+        f2.write("\n")
     f1.close()
     f2.close()
 

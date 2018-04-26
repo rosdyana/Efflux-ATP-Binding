@@ -3,9 +3,6 @@ import os
 os.environ["CUDA_DEVICE_ORDER"] = "PCI_BUS_ID"
 os.environ["CUDA_VISIBLE_DEVICES"] = "0"
 config = tf.ConfigProto()
-# maximun alloc gpu50% of MEM
-# config.gpu_options.per_process_gpu_memory_fraction = 0.5
-# allocate dynamically
 config.gpu_options.allow_growth = True
 sess = tf.Session(config=config)
 
@@ -138,8 +135,6 @@ def conv_block(input_tensor, kernel_size, filters, stage, block, strides=(2, 2))
 
 
 def build_model(SHAPE, nb_classes, bn_axis, seed=None):
-    # We can't use ResNet50 directly, as it might cause a negative dimension
-    # error.
     if seed:
         np.random.seed(seed)
 
@@ -231,7 +226,7 @@ def main():
               epochs=epochs, validation_data=(X_val, Y_val))
 
     # Save Model or creates a HDF5 file
-    model.save('{}resnet50_model.h5'.format(time.monotonic()), overwrite=True)
+    model.save('resnet50_model.h5', overwrite=True)
     # del model  # deletes the existing model
     predicted = model.predict(X_ind)
     y_pred = np.argmax(predicted, axis=1)

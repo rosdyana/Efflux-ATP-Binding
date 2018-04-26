@@ -234,8 +234,8 @@ def main():
               epochs=epochs, validation_data=(X_val, Y_val))
 
     # Save Model or creates a HDF5 file
-    model.save('{}_{}_model.h5'.format(
-        time.monotonic(), args.layernumber), overwrite=True)
+    model.save('{}_DenseNet_model.h5'.format(
+        args.layernumber), overwrite=True)
     # del model  # deletes the existing model
     predicted = model.predict(X_ind)
     y_pred = np.argmax(predicted, axis=1)

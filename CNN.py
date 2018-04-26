@@ -162,7 +162,7 @@ def train_get_result_with_threshold_for_all_fold(dataset_training, dataset_indep
     classifier.fit(XTrain, YTrain, batch_size=batch_size,
                    nb_epoch=nb_epoch, verbose=2, validation_data=(XVal, YVal))
 
-    classifier.save('CNN' + str(windowsize) + '.h5')
+    classifier.save('CNN' + str(windowsize) + '.h5', overwrite=True)
 
     y_pred = classifier.predict(XInd)
 
@@ -170,7 +170,7 @@ def train_get_result_with_threshold_for_all_fold(dataset_training, dataset_indep
 
     f_output = open(finalResultFile, "a")
     threshold = [0.149, 0.5]
-    # while threshold < 1:
+
     for i in threshold:
         accuracy, specitivity, sensitivity, mcc, AUC, TPR, FPR, tp, tn, fp, fn = classificationPerformanceByThreshold(
             i, y_pred, YInd)

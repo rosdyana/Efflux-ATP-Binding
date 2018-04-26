@@ -3,9 +3,6 @@ import os
 os.environ["CUDA_DEVICE_ORDER"] = "PCI_BUS_ID"
 os.environ["CUDA_VISIBLE_DEVICES"] = "0"
 config = tf.ConfigProto()
-# maximun alloc gpu50% of MEM
-# config.gpu_options.per_process_gpu_memory_fraction = 0.5
-# allocate dynamically
 config.gpu_options.allow_growth = True
 sess = tf.Session(config=config)
 
@@ -159,7 +156,7 @@ def main():
               epochs=epochs, validation_data=(X_val, Y_val))
 
     # Save Model or creates a HDF5 file
-    model.save('{}vgg16_model.h5'.format(time.monotonic()), overwrite=True)
+    model.save('vgg16_model.h5', overwrite=True)
     # del model  # deletes the existing model
     predicted = model.predict(X_ind)
     y_pred = np.argmax(predicted, axis=1)
