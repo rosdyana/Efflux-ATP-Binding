@@ -42,10 +42,10 @@ independent_list = []
 path, dirs, files = os.walk(dinput).__next__()
 file_count = len(files)
 training_num = math.ceil(file_count * percentage)
-independent_num = (file_count - training_num) // 3
-validation_num = file_count - training_num - independent_num
-print("{} = {} - {} - {}".format(file_count,
-                                 training_num, validation_num, independent_num))
+validation_num = (file_count - training_num) // 3
+independent_num = file_count - training_num - validation_num
+print("Total proteins {}\n{} of training\n{} of validation\n{} of independent".format(file_count,
+                                                                                      training_num, validation_num, independent_num))
 
 for i, v in enumerate(files):
     if i < independent_num:
